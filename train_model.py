@@ -1,8 +1,11 @@
 from util.dataloader import ImageLoader
 import torch
 from util.utils import argParser
-from os.path import join
+from os.path import join, basename, splitext
 from model.cnn import CoolNet
+
+# TODO: Make this not hard coded
+BATCH_SIZE = 128
 
 def train(net, dataloader, optimizer, criterion, epoch):
 
@@ -30,6 +33,7 @@ def train(net, dataloader, optimizer, criterion, epoch):
             total_loss += running_loss
             running_loss = 0.0
 
+        print('Completed %d images...' % (i,))
     net.log('Final Summary:   loss: %.3f' %
           (total_loss / i))
 
@@ -52,21 +56,21 @@ def test(net, dataloader, tag=''):
     net.log('%s Accuracy of the network: %d %%' % (tag,
         100 * correct / total))
 
-    class_correct = list(0. for i in range(10))
-    class_total = list(0. for i in range(10))
+    class_correct = list(0. for i in range(len(dataloader.classes)))
+    class_total = list(0. for i in range(len(dataloader.classes)))
     with torch.no_grad():
         for data in dataTestLoader:
             images, labels = data
             outputs = net(images)
             _, predicted = torch.max(outputs, 1)
             c = (predicted == labels).squeeze()
-            for i in range(4):
+            for i in range(len(labels)):
                 label = labels[i]
                 class_correct[label] += c[i].item()
                 class_total[label] += 1
 
 
-    for i in range(10):
+    for i in range(len(dataloader.classes)):
         net.log('%s Accuracy of %5s : %2d %%' % (
             tag, dataloader.classes[i], 100 * class_correct[i] / class_total[i]))
 
@@ -74,7 +78,7 @@ def main():
     # TODO: Re-add this at some point
     args = argParser()
 
-    imageLoader = ImageLoader(join('data', 'img', 'train'), join('data', 'img', 'val'))
+    imageLoader = ImageLoader(join('data', 'img', 'train'), join('data', 'img', 'val'), args.batchSize)
     net = CoolNet()
     print('The log is recorded in ')
     print(net.logFile.name)
@@ -92,6 +96,7 @@ def main():
 
     print('The log is recorded in ')
     print(net.logFile.name)
+    torch.save(net, splitext(basename(net.logFile.name))[0] + '-model.pt')
 
 if __name__ == '__main__':
     main()
