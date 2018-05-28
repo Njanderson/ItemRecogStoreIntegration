@@ -24,7 +24,7 @@ class Camera extends Component {
   };
 
   postData = (data) => {
-    return fetch('http://127.0.0.1:5000/infer', {
+    return fetch('http://127.0.0.1:3000/infer', {
       method: 'POST',
       body: this.stripDataURL(data),
     })
