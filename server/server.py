@@ -18,7 +18,7 @@ def infer():
     image = Image.open(BytesIO(base64.b64decode(data)))
     image.save("image.jpg", "JPEG")
 
-    res = {"foo" : "bar"}
+    res = {"name" : "banana", "price" : "$2.00"}
     response = jsonify(res)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
