@@ -19,5 +19,6 @@ def argParser():
 	parser.add_argument('--lr', default=0.01, type=float)
 	parser.add_argument('--batchSize', default=128, type=int)
 	parser.add_argument('--epochs', default=1, type=int)
+	parser.add_argument('--fromFile', type=str, required=False)
 	# parser.add_argument('--model', type=model_class)
 	return parser.parse_args()

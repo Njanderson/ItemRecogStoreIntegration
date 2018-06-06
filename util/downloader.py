@@ -6,7 +6,7 @@ from hashlib import md5
 from PIL import Image
 
 TRAIN_DIR_NAME = 'train'
-VAL_DIR_NAME = 'val'
+VAL_DIR_NAME = 'test'
 
 def load_url(url_path, img_path, label, train_frac=0.9):
     """
