@@ -46,7 +46,7 @@ class CoolNet(BaseModel):
         # self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(3*224*224, 1024)
         self.fc2 = nn.Linear(1024, 256)
-        self.fc3 = nn.Linear(256, 2)
+        self.fc3 = nn.Linear(256, 3)
 
     def forward(self, x):
         # TODO: Implement forward pass for CoolNet
@@ -60,7 +60,7 @@ class CoolNet(BaseModel):
         return x
 
 
-
+"""
 def train(net, dataloader, optimizer, criterion, epoch):
     running_loss = 0.0
     total_loss = 0.0
@@ -73,8 +73,8 @@ def train(net, dataloader, optimizer, criterion, epoch):
         optimizer.zero_grad()
 
         # forward + backward + optimize
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
+        outputs = net(inputs.cuda())
+        loss = criterion(outputs, labels.cuda())
         loss.backward()
         optimizer.step()
 
@@ -136,8 +136,8 @@ def argParser():
 	parser.add_argument('--epochs', default=1, type=int)
 	parser.add_argument('--model', type=model_class)
 	return parser.parse_args()
-
-
+"""
+"""
 def run_model():
 
     args = argParser()
@@ -160,4 +160,4 @@ def run_model():
 
     print('The log is recorded in ')
     print(net.logFile.name)
-
+"""

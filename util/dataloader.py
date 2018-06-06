@@ -17,10 +17,6 @@ class ImageLoader(object):
 			datasets.ImageFolder(
 				traindir,
 				transforms.Compose([
-					# transforms.RandomResizedCrop(224),
-					# transforms.RandomHorizontalFlip(),
-					# transforms.ToTensor(),
-					# normalize,
 					transforms.Resize((256, 256)),
 					transforms.CenterCrop(224),
 					transforms.ToTensor(),

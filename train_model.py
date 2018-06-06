@@ -5,7 +5,7 @@ from os.path import join, basename, splitext
 from model.cnn import CoolNet
 
 # TODO: Make this not hard coded
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 
 def train(net, dataloader, optimizer, criterion, epoch):
 
@@ -15,6 +15,8 @@ def train(net, dataloader, optimizer, criterion, epoch):
     for i, data in enumerate(dataloader.trainloader, 0):
         # get the inputs
         inputs, labels = data
+        inputs = inputs.cuda()
+        labels = labels.cuda()
 
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -26,14 +28,12 @@ def train(net, dataloader, optimizer, criterion, epoch):
         optimizer.step()
 
         # print statistics
-        running_loss += loss.item()
-        if (i + 1) % 2000 == 0:    # print every 2000 mini-batches
-            net.log('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
-            total_loss += running_loss
-            running_loss = 0.0
 
-        print('Completed %d images...' % (i,))
+        net.log('[%d, %5d] loss: %f' %
+                (epoch + 1, i + 1, loss.item()))
+        total_loss += loss.item()
+
+        print('Completed %d batches...' % (i,))
     net.log('Final Summary:   loss: %.3f' %
           (total_loss / i))
 
@@ -48,6 +48,8 @@ def test(net, dataloader, tag=''):
     with torch.no_grad():
         for data in dataTestLoader:
             images, labels = data
+            images = images.cuda()
+            labels = labels.cuda()
             outputs = net(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -61,6 +63,9 @@ def test(net, dataloader, tag=''):
     with torch.no_grad():
         for data in dataTestLoader:
             images, labels = data
+            images = images.cuda()
+            labels = labels.cuda()
+
             outputs = net(images)
             _, predicted = torch.max(outputs, 1)
             c = (predicted == labels).squeeze()
@@ -77,7 +82,7 @@ def test(net, dataloader, tag=''):
 def main():
     # TODO: Re-add this at some point
     args = argParser()
-    net = CoolNet()
+    net = CoolNet().cuda()
     imageLoader = ImageLoader(join('data', 'img', 'train'), join('data', 'img', 'test'), args.batchSize)
     if args.fromFile is None:
         print('The log is recorded in ')
