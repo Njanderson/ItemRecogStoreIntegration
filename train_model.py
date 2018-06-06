@@ -77,26 +77,30 @@ def test(net, dataloader, tag=''):
 def main():
     # TODO: Re-add this at some point
     args = argParser()
-
-    imageLoader = ImageLoader(join('data', 'img', 'train'), join('data', 'img', 'val'), args.batchSize)
     net = CoolNet()
-    print('The log is recorded in ')
-    print(net.logFile.name)
+    imageLoader = ImageLoader(join('data', 'img', 'train'), join('data', 'img', 'test'), args.batchSize)
+    if args.fromFile is None:
+        print('The log is recorded in ')
+        print(net.logFile.name)
 
-    criterion = net.criterion()
-    optimizer = net.optimizer()
+        criterion = net.criterion()
+        optimizer = net.optimizer()
 
-    for epoch in range(args.epochs):  # loop over the dataset multiple times
-        net.adjust_learning_rate(optimizer, epoch, args)
-        train(net, imageLoader, optimizer, criterion, epoch)
-        if epoch % 1 == 0: # Comment out this part if you want a faster training
-            test(net, imageLoader, 'Train')
-            test(net, imageLoader, 'Test')
+        for epoch in range(args.epochs):  # loop over the dataset multiple times
+            net.adjust_learning_rate(optimizer, epoch, args)
+            train(net, imageLoader, optimizer, criterion, epoch)
+            if epoch % 1 == 0: # Comment out this part if you want a faster training
+                test(net, imageLoader, 'Train')
+                test(net, imageLoader, 'Test')
 
 
-    print('The log is recorded in ')
-    print(net.logFile.name)
-    torch.save(net, splitext(basename(net.logFile.name))[0] + '-model.pt')
+        print('The log is recorded in ')
+        print(net.logFile.name)
+        torch.save(net.state_dict(), splitext(basename(net.logFile.name))[0] + '-model.pt')
+    else:
+        net.load_state_dict(torch.load(args.fromFile))
+        test(net, imageLoader, 'Train')
+        test(net, imageLoader, 'Test')
 
 if __name__ == '__main__':
     main()
