@@ -7,12 +7,18 @@ import backgroundImage from './bg.jpg'
 class App extends Component {
   render() {
     const logoStyle = {
-      fontSize: '30px'
+      fontSize: '40px',
+      paddingTop: '20px',
+      paddingBottom: '20px',
+      color: "#ffffff",
+      fontFamily: "HelveticaNeue-Light",
     };
     const mainStyle = {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      color: "#ffffff",
+      fontFamily: "HelveticaNeue-Light",
     };
     return (
       <div className="App" style={{backgroundImage : `url(${backgroundImage})` , backgroundRepeat: 'repeat', backgroundSize: 'cover'}} >

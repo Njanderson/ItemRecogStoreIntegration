@@ -45,9 +45,17 @@ class Camera extends Component {
   }
 
   render() {
-    const buttonStyle = {
+    const buttonDivStyle = {
       fontSize: '20px',
-      width: '200px',
+      color: "#ffffff",
+      fontFamily: "HelveticaNeue-Light",
+      paddingTop: "20px",
+    };
+    const buttonStyle = {
+      width: '300px',
+      height: '40px',
+      fontSize: '30px',
+      fontFamily: "HelveticaNeue-Light",
     };
     return (
       <div>
@@ -56,7 +64,7 @@ class Camera extends Component {
           screenshotFormat="image/jpeg"
         />
       
-        <div>
+        <div style={buttonDivStyle}>
           <button style={buttonStyle} onClick={this.buttonClicked} >
             Take Photo 
           </button>
