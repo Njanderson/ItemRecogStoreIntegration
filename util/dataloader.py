@@ -12,7 +12,7 @@ class ImageLoader(object):
 										 std=[0.229, 0.224, 0.225])
 
 		# TODO: Can scan these in from the urls directory
-		self.classes = ('muffin', 'banana')
+		self.classes = ('muffin', 'banana', 'apple')
 		self.trainloader = torch.utils.data.DataLoader(
 			datasets.ImageFolder(
 				traindir,

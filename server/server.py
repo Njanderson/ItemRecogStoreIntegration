@@ -7,18 +7,30 @@ import random
 import torch
 import torchvision
 import pdb
+import sys
+sys.path.append('..')
+from model.cnn import CoolNet
+VGG = False
+COOLNET = True
 
-image_size = 224, 244
-
-SAVE_MODEL_PATH="/tmp/store/model.pytorch" # TODO: make this an argument
 
 app = Flask(__name__)
 
-state = torch.load(SAVE_MODEL_PATH)
+if VGG:
+    SAVE_MODEL_PATH="/tmp/store/model.pytorch"
+    state = torch.load(SAVE_MODEL_PATH)
+    model = state['model'] # Move model to GPU
+    labels = state['labels']
+    model.eval() # Set the model to evaluation mode
+    image_size = 224, 244
 
-model = state['model'].cuda() # Move model to GPU
-labels = state['labels']
-model.eval() # Set the model to evaluation mode
+if COOLNET:
+    SAVE_MODEL_PATH="../2018-05-22_11_16_35_log-model.pt"
+    model = CoolNet()
+    model.load_state_dict(torch.load(SAVE_MODEL_PATH))
+    labels = ('muffin', 'banana')
+    model.eval() # Set the model to evaluation mode
+    image_size = 224, 224
 
 @app.route('/')
 def hello_world():
@@ -29,7 +41,8 @@ def infer():
     data = request.get_data()
     #print(data)
     
-    image = Image.open(BytesIO(base64.b64decode(data)))
+    # image = Image.open(BytesIO(base64.b64decode(data)))
+    image = Image.open(BytesIO(data))
     model_res = infer(model, labels, image)
     print("MODEL_RES output:", model_res)
     
@@ -46,14 +59,19 @@ def infer():
 
 
 def infer(model, labels, image):
-    image_tensor = image_to_tensor(image).cuda()
+    image_tensor = image_to_tensor(image)
+    # resize = torchvision.transforms.Resize(256, 256)
     output = model(image_tensor)
+    print(output)
     result_index = output.data.cpu().numpy().argmax()
     result = labels[result_index]
     return result
 
 def image_to_tensor(pil_image):
-    resized=ImageOps.fit(pil_image, image_size, Image.ANTIALIAS)
+    resized = ImageOps.fit(pil_image, image_size, Image.ANTIALIAS)
     loader = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor()])
     return loader(resized).unsqueeze(0) 
+
+if __name__ == '__main__':
+    app.run(port=3000)

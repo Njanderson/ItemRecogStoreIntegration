@@ -8,7 +8,9 @@ import torch.optim as optim
 import datetime
 import argparse
 import time
-from model.dataloader import CifarLoader
+import sys
+sys.path.append('..')
+from util.dataloader import ImageLoader
 
 class BaseModel(nn.Module):
     def __init__(self):
@@ -42,7 +44,7 @@ class CoolNet(BaseModel):
         # self.conv1 = nn.Conv2d(3, 6, 5)
         # self.pool = nn.MaxPool2d(2, 2)
         # self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(150528, 1024)
+        self.fc1 = nn.Linear(3*224*224, 1024)
         self.fc2 = nn.Linear(1024, 256)
         self.fc3 = nn.Linear(256, 2)
 
@@ -50,8 +52,8 @@ class CoolNet(BaseModel):
         # TODO: Implement forward pass for CoolNet
         # x = self.pool(F.relu(self.conv1(x)))
         # x = self.pool(F.relu(self.conv2(x)))
-        # x = x.view(-1, 16 * 53 * 53)
-        x = x.view(-1, 150528)
+        x = x.view(-1, 3*224*224)
+        # x = x.view(-1, 150528)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -140,7 +142,7 @@ def run_model():
 
     args = argParser()
 
-    cifarLoader = CifarLoader(args)
+    cifarLoader = ImageLoader(args)
     net = args.model()
     print('The log is recorded in ')
     print(net.logFile.name)
