@@ -8,16 +8,20 @@ import torch
 import torchvision
 import pdb
 import sys
+import boto3
+import uuid
+import os
 sys.path.append('..')
-from model.cnn import CoolNet
-VGG = False
-COOLNET = True
+# from model.cnn import CoolNet
+
+VGG = True
+COOLNET = False
 
 
 app = Flask(__name__)
 
 if VGG:
-    SAVE_MODEL_PATH="/tmp/store/model.pytorch"
+    SAVE_MODEL_PATH = "model.pytorch"
     state = torch.load(SAVE_MODEL_PATH)
     model = state['model'] # Move model to GPU
     labels = state['labels']
@@ -25,16 +29,50 @@ if VGG:
     image_size = 224, 244
 
 if COOLNET:
-    SAVE_MODEL_PATH="../2018-05-22_11_16_35_log-model.pt"
+    SAVE_MODEL_PATH="coolnet"
     model = CoolNet()
     model.load_state_dict(torch.load(SAVE_MODEL_PATH))
     labels = ('muffin', 'banana')
     model.eval() # Set the model to evaluation mode
-    image_size = 224, 224
+    image_size = 256, 256
 
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
+
+@app.route('/aws', methods=['POST'])
+def aws():
+    data = request.get_data()
+
+    # Upload to S3
+    s3client = boto3.client('s3', region_name='us-west-2')
+
+    # Create bucket if not exists
+    bucket_name = 'cse455-deepstore'
+    
+    # Use this to create the bucket if it doesn't exist...
+    # s3client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': 'us-west-2'})
+
+    # Upload image
+    image_key = str(uuid.uuid4())
+
+    # For use with Postman...
+    s3client.put_object(Bucket=bucket_name, Key=image_key, Body=bytes(data))
+
+    # If your webcam works...
+    # s3client.put_object(Bucket=bucket_name, Key=image_key, Body=base64.b64decode(data))
+
+    # Recognize the image
+    rekogClient = boto3.client('rekognition')
+    response = rekogClient.detect_labels(Image={'S3Object':{'Bucket':bucket_name,'Name':image_key}})
+    
+    # Server-side debugging
+    print('Detected labels for ' + image_key)    
+    for label in response['Labels']:
+        print (label['Name'] + ' : ' + str(label['Confidence']))
+    
+    # Return labels and their confidence
+    return "\n".join([label['Name'] + ' : ' + str(label['Confidence']) for label in response['Labels']])
 
 @app.route('/infer', methods=["POST"])
 def infer():
@@ -43,6 +81,7 @@ def infer():
     
     # image = Image.open(BytesIO(base64.b64decode(data)))
     image = Image.open(BytesIO(data))
+
     model_res = infer(model, labels, image)
     print("MODEL_RES output:", model_res)
     

@@ -11,20 +11,45 @@ class Camera extends Component {
     };
   }
 
-  buttonClicked = () => {
+  vggButtonClicked = () => {
     this.setState({isLoading : true});
     const imageSrc = this.webcam.getScreenshot();
     //console.log(imageSrc);
 
-    this.postData(imageSrc)
+    this.postDataVgg(imageSrc)
       .then(data => {
         console.log(data); 
         this.setState({itemData: data, isLoading: false});
       });
   };
 
-  postData = (data) => {
+  postDataVgg = (data) => {
     return fetch('http://127.0.0.1:3000/infer', {
+      method: 'POST',
+      body: this.stripDataURL(data),
+    })
+      .then(response => {
+        return response.json() 
+      })
+      .catch(err => {
+        alert(err);
+      })
+  }
+
+  awsButtonClicked = () => {
+    this.setState({isLoading : true});
+    const imageSrc = this.webcam.getScreenshot();
+    console.log(imageSrc);
+
+    this.postDataAWS(imageSrc)
+      .then(data => {
+        console.log(data); 
+        this.setState({itemData: data, isLoading: false});
+      });
+  };
+
+  postDataAWS = (data) => {
+    return fetch('http://127.0.0.1:3000/aws', {
       method: 'POST',
       body: this.stripDataURL(data),
     })
@@ -65,8 +90,13 @@ class Camera extends Component {
         />
       
         <div style={buttonDivStyle}>
-          <button style={buttonStyle} onClick={this.buttonClicked} >
-            Take Photo 
+          <button style={buttonStyle} onClick={this.vggButtonClicked} >
+            Take Photo: Infer with VGG
+          </button>
+        </div>
+        <div style={buttonDivStyle}>
+          <button style={buttonStyle} onClick={this.awsButtonClicked} >
+            Take Photo: Infer with AWS Rekognition
           </button>
         </div>
           <Item data={this.state}/>
