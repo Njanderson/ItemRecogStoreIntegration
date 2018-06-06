@@ -10,6 +10,7 @@ import pdb
 import sys
 import boto3
 import uuid
+import json
 import os
 sys.path.append('..')
 # from model.cnn import CoolNet
@@ -40,6 +41,7 @@ if COOLNET:
 def hello_world():
     return 'Hello, World!'
 
+
 @app.route('/aws', methods=['POST'])
 def aws():
     data = request.get_data()
@@ -66,13 +68,38 @@ def aws():
     rekogClient = boto3.client('rekognition')
     response = rekogClient.detect_labels(Image={'S3Object':{'Bucket':bucket_name,'Name':image_key}})
     
+    # Map these AWS labels to our domain
+    mappings = {
+        # Muffin
+        "Bread": "Muffin",
+        "Muffin": "Muffin",
+        "Cake": "Muffin",
+        "Dessert": "Muffin",
+        # Banana
+        "Banana": "Banana",
+        # Apple
+        "Apple": "Apple",
+        "Citrus Fruit": "Apple",
+        "Orange": "Apple",
+        "Mango": "Apple"
+    }
+
+    model_res = None
+
     # Server-side debugging
     print('Detected labels for ' + image_key)    
     for label in response['Labels']:
         print (label['Name'] + ' : ' + str(label['Confidence']))
+
+        # Return label with highest confidence
+        if model_res == None and label in mappings:
+            model_res = labels 
     
-    # Return labels and their confidence
-    return "\n".join([label['Name'] + ' : ' + str(label['Confidence']) for label in response['Labels']])
+    # Default
+    if model_res == None:
+        model_res = "Banana"
+
+    return generate_response(model_res)
 
 @app.route('/infer', methods=["POST"])
 def infer():
@@ -85,17 +112,20 @@ def infer():
     model_res = infer(model, labels, image)
     print("MODEL_RES output:", model_res)
     
+    return generate_response(model_res)
+    
+
+def generate_response(label):
     # generate a random price for fun :)
     price1 = str(random.randint(0, 9))
     price2 = str(random.randint(0, 9))
     price3 = str(random.randint(0, 9))
     finalPrice = price1 + "." + price2 + price3    
 
-    res = {"name" : model_res, "price" : finalPrice}
+    res = {"name" : label, "price" : finalPrice}
     response = jsonify(res)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
-
 
 def infer(model, labels, image):
     image_tensor = image_to_tensor(image)

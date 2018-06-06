@@ -6,54 +6,39 @@ class Camera extends Component {
 
   constructor(props) {
     super(props);
+    this.backend_url = 'http://applejack.cs.washington.edu:3000';
     this.state = {
       isLoading: false,
     };
   }
 
-  vggButtonClicked = () => {
+  awsClicked = () => {
+    this.doRecog("/aws");
+  };
+
+  inferClicked = () => {
+    this.doRecog("/infer");
+  };
+
+  doRecog = (route) => {
     this.setState({isLoading : true});
     const imageSrc = this.webcam.getScreenshot();
     //console.log(imageSrc);
 
-    this.postDataVgg(imageSrc)
+    this.postData(route, imageSrc)
       .then(data => {
         console.log(data); 
         this.setState({itemData: data, isLoading: false});
       });
   };
 
-  postDataVgg = (data) => {
-    return fetch('http://127.0.0.1:3000/infer', {
+  postData= (route, data) => {
+    return fetch(this.backend_url + route, {
       method: 'POST',
       body: this.stripDataURL(data),
     })
       .then(response => {
-        return response.json() 
-      })
-      .catch(err => {
-        alert(err);
-      })
-  }
-
-  awsButtonClicked = () => {
-    this.setState({isLoading : true});
-    const imageSrc = this.webcam.getScreenshot();
-    console.log(imageSrc);
-
-    this.postDataAWS(imageSrc)
-      .then(data => {
-        console.log(data); 
-        this.setState({itemData: data, isLoading: false});
-      });
-  };
-
-  postDataAWS = (data) => {
-    return fetch('http://127.0.0.1:3000/aws', {
-      method: 'POST',
-      body: this.stripDataURL(data),
-    })
-      .then(response => {
+        console.log(data);
         return response.json() 
       })
       .catch(err => {
@@ -90,12 +75,12 @@ class Camera extends Component {
         />
       
         <div style={buttonDivStyle}>
-          <button style={buttonStyle} onClick={this.vggButtonClicked} >
+          <button style={buttonStyle} onClick={this.vggClicked} >
             Take Photo: Infer with VGG
           </button>
         </div>
         <div style={buttonDivStyle}>
-          <button style={buttonStyle} onClick={this.awsButtonClicked} >
+          <button style={buttonStyle} onClick={this.awsClicked} >
             Take Photo: Infer with AWS Rekognition
           </button>
         </div>
